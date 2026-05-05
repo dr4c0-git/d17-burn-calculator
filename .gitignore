@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+.next/
+dist/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Data / cache
+*.sqlite
+*.db
+backend/data/
+backend/.cache/
+
+# Build artifacts
+frontend/dist/
+frontend/.vite/

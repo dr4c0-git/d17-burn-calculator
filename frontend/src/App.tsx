@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { fetchState, simulate, State, SimulateResult } from "./lib/api";
 import { TrancheBar } from "./components/TrancheBar";
 import { Docs } from "./components/Docs";
+import { Allocations } from "./components/Allocations";
 
-type View = "calculator" | "docs";
+type View = "calculator" | "allocations" | "docs";
 
 export default function App() {
   const [view, setView] = useState<View>("calculator");
@@ -97,9 +98,15 @@ export default function App() {
             </a>
             .
           </p>
-          <nav className="mt-6 flex gap-2 text-sm">
+          <nav className="mt-6 flex flex-wrap gap-2 text-sm">
             <NavTab active={view === "calculator"} onClick={() => setView("calculator")}>
               Calculator
+            </NavTab>
+            <NavTab
+              active={view === "allocations"}
+              onClick={() => setView("allocations")}
+            >
+              Allocations
             </NavTab>
             <NavTab active={view === "docs"} onClick={() => setView("docs")}>
               How it works
@@ -111,6 +118,8 @@ export default function App() {
       <div className="flex-1">
         {view === "docs" ? (
           <Docs />
+        ) : view === "allocations" ? (
+          <Allocations onTrancheBarReset={() => setResult(null)} />
         ) : (
           <>
             {/* Live state panel */}

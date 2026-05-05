@@ -97,6 +97,70 @@ class BurnState:
                 ),
             )
 
+    def allocations(self, event_allocation_tokens: int, total_d17_supply: int) -> list[dict]:
+        """Compute the per-wallet ranked allocation table for the current event.
+
+        Aggregates each wallet's burn transactions, applies their tranche
+        multipliers, and returns the projected D17 allocation per wallet
+        sorted by allocation desc. The total across all wallets equals
+        `event_allocation_tokens` exactly (modulo float rounding).
+        """
+        with self._lock:
+            N = len(self._burns)
+            if N == 0:
+                return []
+
+            tranche_size = max(1, -(-N // 10))  # ceil
+            total_weighted = 0.0
+            per_burn: list[tuple[str, float, int, float, float]] = []
+            # (sender, amount, tranche_1based, multiplier, weighted)
+            for i, b in enumerate(self._burns):
+                tr = min(9, i // tranche_size)
+                mult = MULTIPLIERS[tr]
+                w = b.amount * mult
+                per_burn.append((b.sender, b.amount, tr + 1, mult, w))
+                total_weighted += w
+
+            # Aggregate per wallet
+            agg: dict[str, dict] = {}
+            for sender, amount, tranche, _mult, weighted in per_burn:
+                e = agg.setdefault(
+                    sender,
+                    {
+                        "wallet": sender,
+                        "tx_count": 0,
+                        "total_burned": 0.0,
+                        "weighted": 0.0,
+                        "tranches": [],
+                    },
+                )
+                e["tx_count"] += 1
+                e["total_burned"] += amount
+                e["weighted"] += weighted
+                e["tranches"].append(tranche)
+
+            # Finalize: allocation per wallet
+            result: list[dict] = []
+            for e in agg.values():
+                share = (e["weighted"] / total_weighted) if total_weighted > 0 else 0.0
+                allocation_tokens = share * event_allocation_tokens
+                result.append(
+                    {
+                        "wallet": e["wallet"],
+                        "tx_count": e["tx_count"],
+                        "total_burned": e["total_burned"],
+                        "tranches": sorted(set(e["tranches"])),
+                        "allocation_tokens": allocation_tokens,
+                        "allocation_pct_of_event": share * 100,  # % of the event share
+                        "allocation_pct_of_supply": (allocation_tokens / total_d17_supply) * 100,
+                    }
+                )
+
+            result.sort(key=lambda x: -x["allocation_tokens"])
+            for i, r in enumerate(result, 1):
+                r["rank"] = i
+            return result
+
     def simulate(self, amount: float, extra_burns_after: int, event_share_pct: float) -> dict:
         """Project a hypothetical new burn's tranche, multiplier, and allocation.
 

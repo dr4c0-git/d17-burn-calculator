@@ -31,6 +31,23 @@ export async function fetchState(): Promise<State> {
   return r.json();
 }
 
+export interface Allocation {
+  rank: number;
+  wallet: string;
+  tx_count: number;
+  total_burned: number;
+  tranches: number[];
+  allocation_tokens: number;
+  allocation_pct_of_event: number;
+  allocation_pct_of_supply: number;
+}
+
+export async function fetchAllocations(): Promise<Allocation[]> {
+  const r = await fetch(`${API_BASE}/allocations`);
+  if (!r.ok) throw new Error(`/allocations failed: ${r.status}`);
+  return r.json();
+}
+
 export async function simulate(
   amount: number,
   extraBurnsAfter: number,

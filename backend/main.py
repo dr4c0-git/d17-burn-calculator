@@ -81,6 +81,17 @@ class SimulateRequest(BaseModel):
     extra_burns_after: int = 0  # how many txs you assume will burn after yours
 
 
+class AllocationEntry(BaseModel):
+    rank: int
+    wallet: str
+    tx_count: int
+    total_burned: float  # XBT
+    tranches: list[int]  # 1..10, sorted unique tranches the wallet appears in
+    allocation_tokens: float  # absolute D17 tokens (float for fractional precision)
+    allocation_pct_of_event: float  # % of the current 3% event share
+    allocation_pct_of_supply: float  # % of total D17 supply (1B)
+
+
 class SimulateResponse(BaseModel):
     your_position: int
     total_after_you: int
@@ -96,8 +107,15 @@ def root() -> dict:
     return {
         "name": "D17 Burn Calculator API",
         "docs": "/docs",
-        "endpoints": ["/state", "/simulate"],
+        "endpoints": ["/state", "/simulate", "/allocations"],
     }
+
+
+@app.get("/allocations", response_model=list[AllocationEntry])
+def get_allocations() -> list[AllocationEntry]:
+    """Per-wallet ranked allocation table for the current event."""
+    rows = state.allocations(EVENT_ALLOCATION, D17_TOTAL_SUPPLY)
+    return [AllocationEntry(**r) for r in rows]
 
 
 @app.get("/state", response_model=StateResponse)

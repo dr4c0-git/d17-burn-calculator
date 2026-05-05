@@ -38,9 +38,13 @@ npm install
 npm run dev
 ```
 
-## Status
+## Live
 
-🚧 MVP in progress.
+- **App** : https://d17-burn-calculator.pages.dev
+- **API** : https://d17-burn-calculator-api.onrender.com (Swagger : `/docs`)
+
+The backend runs on a free tier with cold starts after ~15 min of
+inactivity ; the first request after a sleep can take 30-60 s.
 
 ## Contributing
 

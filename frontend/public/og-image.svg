@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+<defs>
+<radialGradient id="bg" cx="50%" cy="40%" r="65%">
+  <stop offset="0%" stop-color="#0a1140"/>
+  <stop offset="100%" stop-color="#000000"/>
+</radialGradient>
+<filter id="blueGlow" x="-50%" y="-50%" width="200%" height="200%">
+  <feGaussianBlur stdDeviation="3.5" result="b"/>
+  <feFlood flood-color="#1a3fff" flood-opacity="1"/>
+  <feComposite in2="b" operator="in" result="g"/>
+  <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="bigTextGlow" x="-50%" y="-50%" width="200%" height="200%">
+  <feGaussianBlur stdDeviation="6" result="b"/>
+  <feFlood flood-color="#5a82ff" flood-opacity="1"/>
+  <feComposite in2="b" operator="in" result="g"/>
+  <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<circle cx="600" cy="220" r="280" fill="#1a3fff" opacity="0.12"/>
+<text x="600" y="200" text-anchor="middle" font-family="Georgia,serif" font-size="100" font-style="italic" font-weight="bold" fill="#ffffff" filter="url(#bigTextGlow)" letter-spacing="3">D17 Burn Calculator</text>
+<text x="600" y="260" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="26" fill="#b8c5e8" letter-spacing="2">Estimate your D17 allocation when burning XBT</text>
+<rect x="110.0" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.2" stroke="#5a82ff" stroke-opacity="0.8" stroke-width="1.5"/>
+<text x="152.7" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff" filter="url(#blueGlow)">2.4x</text>
+<text x="152.7" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 1</text>
+<rect x="209.4" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.2" stroke="#5a82ff" stroke-opacity="0.8" stroke-width="1.5"/>
+<text x="252.1" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff" filter="url(#blueGlow)">2.0x</text>
+<text x="252.1" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 2</text>
+<rect x="308.8" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.2" stroke="#5a82ff" stroke-opacity="0.8" stroke-width="1.5"/>
+<text x="351.5" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff" filter="url(#blueGlow)">1.8x</text>
+<text x="351.5" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 3</text>
+<rect x="408.2" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="450.9" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.6x</text>
+<text x="450.9" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 4</text>
+<rect x="507.6" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="550.3" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.5x</text>
+<text x="550.3" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 5</text>
+<rect x="607.0" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="649.7" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.4x</text>
+<text x="649.7" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 6</text>
+<rect x="706.4" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="749.1" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.3x</text>
+<text x="749.1" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 7</text>
+<rect x="805.8" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="848.5" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.2x</text>
+<text x="848.5" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 8</text>
+<rect x="905.2" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="947.9" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.1x</text>
+<text x="947.9" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 9</text>
+<rect x="1004.6" y="360" width="85.4" height="110" rx="10" fill="#1a3fff" opacity="0.05" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1.5"/>
+<text x="1047.3" y="423.0" text-anchor="middle" font-family="Georgia,serif" font-size="42" font-style="italic" font-weight="bold" fill="#ffffff">1.0x</text>
+<text x="1047.3" y="492" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#7a8bb8" letter-spacing="1">tranche 10</text>
+<text x="600" y="572" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="20" fill="#b8c5e8" letter-spacing="1">Built by @__dr4c0__ &#183; Mechanics by @xbt2027</text>
+<text x="600" y="602" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#5a6896" letter-spacing="2">free &#183; open-source &#183; on-chain</text>
+</svg>

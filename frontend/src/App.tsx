@@ -231,6 +231,23 @@ export default function App() {
                     above, but they don't pre-fill this form.
                   </p>
                 </div>
+
+                {/* Soft sanity warning when extra_burns is absurdly high. */}
+                {state &&
+                  Number.isFinite(Number(extra)) &&
+                  Number(extra) > Math.max(50, state.total_burns * 10) && (
+                    <p className="mt-3 text-xs text-amber-300/90 bg-amber-300/5 border border-amber-300/20 rounded-md px-3 py-2">
+                      ⚠️ <strong>{Number(extra).toLocaleString()}</strong> extra
+                      burns is{" "}
+                      <strong>
+                        {Math.round(Number(extra) / Math.max(1, state.total_burns))}×
+                      </strong>{" "}
+                      the current total of {state.total_burns.toLocaleString()}.
+                      Allocation rounds to near-zero by construction. Try a
+                      smaller value (a few hundred to a few thousand) for a
+                      meaningful estimate.
+                    </p>
+                  )}
                 {simError && <p className="mt-4 text-red-400 text-sm">{simError}</p>}
 
                 {result && (

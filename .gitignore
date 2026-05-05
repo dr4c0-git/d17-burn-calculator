@@ -30,3 +30,7 @@ backend/.cache/
 # Build artifacts
 frontend/dist/
 frontend/.vite/
+# TypeScript incremental build outputs (we ship .ts, not the compiled .js)
+frontend/src/**/*.js
+frontend/src/**/*.js.map
+frontend/tsconfig.tsbuildinfo

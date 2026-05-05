@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchState, simulate, State, SimulateResult } from "./lib/api";
 import { TrancheBar } from "./components/TrancheBar";
 import { Docs } from "./components/Docs";
@@ -18,6 +18,9 @@ export default function App() {
   const [simError, setSimError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const [scenarios, setScenarios] = useState<Array<SimulateResult & { extras: number; label: string }> | null>(null);
+  const [scenariosLoading, setScenariosLoading] = useState(false);
+  const [scenariosError, setScenariosError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [lastFetchedAt, setLastFetchedAt] = useState<number>(Date.now());
   const [tick, setTick] = useState(0);
@@ -57,6 +60,8 @@ export default function App() {
     e.preventDefault();
     setSimError(null);
     setResult(null);
+    setScenarios(null);
+    setScenariosError(null);
     const a = Number(amount);
     const x = Number(extra);
     if (!Number.isFinite(a) || a <= 0) {
@@ -75,6 +80,43 @@ export default function App() {
       setSimError((err as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Scenario presets, computed off the current burn count.
+  // Calibrated as ratios of current_total so they stay meaningful as the
+  // event grows. Floored to integers >= 0.
+  const scenarioPresets = useMemo(() => {
+    const N = state?.total_burns ?? 0;
+    return [
+      { extras: 0, label: "If you burn now", hint: "no one else burns after you" },
+      { extras: Math.max(10, Math.round(N * 0.25)), label: "+ 25% more burners", hint: "modest activity" },
+      { extras: Math.max(50, Math.round(N * 1.0)), label: "+ 100% more burners", hint: "doubled volume" },
+      { extras: Math.max(150, Math.round(N * 3.0)), label: "+ 300% more burners", hint: "high traction" },
+    ];
+  }, [state?.total_burns]);
+
+  async function onRunScenarios() {
+    setScenariosError(null);
+    setScenarios(null);
+    const a = Number(amount);
+    if (!Number.isFinite(a) || a <= 0) {
+      setScenariosError("Enter a positive XBT amount above before running scenarios.");
+      return;
+    }
+    setScenariosLoading(true);
+    try {
+      const results = await Promise.all(
+        scenarioPresets.map(async (s) => {
+          const r = await simulate(a, s.extras);
+          return { ...r, extras: s.extras, label: s.label };
+        })
+      );
+      setScenarios(results);
+    } catch (err: unknown) {
+      setScenariosError((err as Error).message);
+    } finally {
+      setScenariosLoading(false);
     }
   }
 
@@ -249,6 +291,90 @@ export default function App() {
                     </p>
                   )}
                 {simError && <p className="mt-4 text-red-400 text-sm">{simError}</p>}
+
+                {/* Scenarios panel — quick sensitivity sweep over typical futures. */}
+                <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+                  <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                    <div>
+                      <h3 className="text-sm uppercase tracking-widest text-white/50">
+                        Scenarios
+                      </h3>
+                      <p className="text-xs text-white/40 mt-1">
+                        Run the same burn amount through 4 typical futures.
+                        Helps you read the sensitivity of your allocation.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onRunScenarios}
+                      disabled={scenariosLoading || !amount}
+                      className="text-sm px-3 py-1.5 rounded-md border border-white/15 hover:border-white/40 disabled:opacity-50"
+                    >
+                      {scenariosLoading ? "Running…" : "Run scenarios"}
+                    </button>
+                  </div>
+                  {scenariosError && (
+                    <p className="text-red-400 text-sm">{scenariosError}</p>
+                  )}
+                  {scenarios && (
+                    <div className="overflow-x-auto rounded-lg border border-white/10">
+                      <table className="w-full text-sm">
+                        <thead className="bg-white/[0.03] text-white/50 text-xs uppercase tracking-wider">
+                          <tr>
+                            <th className="text-left px-3 py-2">Scenario</th>
+                            <th className="text-right px-3 py-2">Extras</th>
+                            <th className="text-right px-3 py-2">Tranche</th>
+                            <th className="text-right px-3 py-2">Multiplier</th>
+                            <th className="text-right px-3 py-2">D17 (tokens)</th>
+                            <th className="text-right px-3 py-2">% of supply</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {scenarios.map((s, i) => (
+                            <tr key={i} className="hover:bg-white/[0.02]">
+                              <td className="px-3 py-2 text-white/80">
+                                {s.label}
+                              </td>
+                              <td className="px-3 py-2 text-right text-white/60 tabular-nums">
+                                {s.extras.toLocaleString()}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <span
+                                  className={[
+                                    "text-xs px-1.5 py-0.5 rounded",
+                                    s.your_tranche <= 3
+                                      ? "bg-glow/25 text-white"
+                                      : "bg-white/5 text-white/60",
+                                  ].join(" ")}
+                                >
+                                  {s.your_tranche}/10
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 text-right font-serif italic font-bold">
+                                {s.your_multiplier.toFixed(1)}x
+                              </td>
+                              <td className="px-3 py-2 text-right font-serif italic font-bold tabular-nums">
+                                {s.your_allocation_tokens.toLocaleString(undefined, {
+                                  maximumFractionDigits: 0,
+                                })}
+                              </td>
+                              <td className="px-3 py-2 text-right text-white/60 tabular-nums">
+                                {s.your_allocation_pct.toFixed(4)}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {!scenarios && !scenariosLoading && !scenariosError && (
+                    <p className="text-xs text-white/40">
+                      Click <em>Run scenarios</em> after entering an amount above.
+                      Each scenario assumes future burns match the current
+                      average size.
+                    </p>
+                  )}
+                </div>
 
                 {result && (
                   <div className="mt-8 box-glow rounded-xl p-6 bg-white/[0.02] space-y-4">

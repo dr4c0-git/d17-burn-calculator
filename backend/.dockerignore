@@ -1,0 +1,13 @@
+# Don't ship local cruft into the image.
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+data/
+*.sqlite
+*.db
+.pytest_cache/
+.mypy_cache/
+.DS_Store

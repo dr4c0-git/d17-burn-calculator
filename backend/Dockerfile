@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # App code.
-COPY main.py state.py helius.py ./
+COPY main.py state.py solana_rpc.py ./
 
 # Fly.io routes external traffic to whatever port the app listens on,
 # defaulting to 8080 unless overridden in fly.toml.

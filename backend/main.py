@@ -45,8 +45,8 @@ state = BurnState()
 async def lifespan(_: FastAPI):
     # On startup: kick off the indexing loop in the background.
     # On shutdown: cancel it cleanly.
-    # (Implemented in helius.py - imported lazily to keep main.py readable.)
-    from helius import start_indexer, stop_indexer
+    # Implemented in solana_rpc.py — provider-agnostic JSON-RPC indexer.
+    from solana_rpc import start_indexer, stop_indexer
 
     task = await start_indexer(state)
     try:

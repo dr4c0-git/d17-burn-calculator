@@ -39,7 +39,14 @@ REFUND_ADDRESS = os.getenv(
     "REFUND_ADDRESS", "DWUFCjBxqDuXpUGF8KnVzhAuz2uhRyfrky4aFc2JvvgH"
 )
 XBT_MINT = os.getenv("XBT_MINT", "")
-POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "30"))
+# Default bumped from 30s to 300s : at 30s × 2 ATAs we burn ~500k Helius
+# calls/month, which exceeds the free tier (100k). 300s keeps us well
+# under. Override via env var if you have a paid plan.
+POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "300"))
+# Wait this many seconds before retrying after a startup failure (e.g. when
+# Helius is rate-limiting us). Stays in a loop so the indexer recovers
+# automatically once the quota resets without needing a redeploy.
+INIT_RETRY_INTERVAL = int(os.getenv("INIT_RETRY_INTERVAL", "300"))
 
 HELIUS_RPC = "https://mainnet.helius-rpc.com"
 HELIUS_API = "https://api.helius.xyz"
@@ -64,16 +71,55 @@ async def stop_indexer(task: asyncio.Task) -> None:
 
 
 async def _indexer_loop(state: BurnState) -> None:
-    if not HELIUS_API_KEY:
-        return
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        # Resolve ATAs once (they're deterministic per (wallet, mint)).
-        burn_ata = await _resolve_ata(client, BURN_ADDRESS, XBT_MINT) if XBT_MINT else None
-        refund_ata = (
-            await _resolve_ata(client, REFUND_ADDRESS, XBT_MINT) if XBT_MINT else None
-        )
-        log.info("Resolved ATAs: burn=%s, refund=%s", burn_ata, refund_ata)
+    """Resolve ATAs (with retry on failure) then poll forever.
 
+    Critical: ATA resolution is wrapped in its own retry loop so a Helius
+    rate-limit at startup doesn't kill the task silently. Without this, a
+    429 on the very first call would crash the coroutine before any try
+    block, and the API would just serve stale `burns=0` forever.
+    """
+    if not HELIUS_API_KEY:
+        log.warning("HELIUS_API_KEY not set — indexer will not run.")
+        return
+
+    log.info("Indexer starting. POLL_INTERVAL=%ds", POLL_INTERVAL)
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        burn_ata: Optional[str] = None
+        refund_ata: Optional[str] = None
+
+        # Step 1 : keep trying to resolve ATAs until both succeed.
+        # If Helius is rate-limited or down at startup we just back off and
+        # retry, instead of dying silently.
+        while burn_ata is None or refund_ata is None:
+            try:
+                if XBT_MINT:
+                    if burn_ata is None:
+                        burn_ata = await _resolve_ata(client, BURN_ADDRESS, XBT_MINT)
+                    if refund_ata is None:
+                        refund_ata = await _resolve_ata(client, REFUND_ADDRESS, XBT_MINT)
+                else:
+                    log.warning("XBT_MINT not configured — indexer will not run.")
+                    return
+
+                if burn_ata is None or refund_ata is None:
+                    log.warning(
+                        "Could not resolve ATAs (burn=%s refund=%s). Retrying in %ds.",
+                        burn_ata, refund_ata, INIT_RETRY_INTERVAL,
+                    )
+                    await asyncio.sleep(INIT_RETRY_INTERVAL)
+                    continue
+
+                log.info("Resolved ATAs: burn=%s, refund=%s", burn_ata, refund_ata)
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                log.exception(
+                    "ATA resolution failed: %s. Retrying in %ds.", e, INIT_RETRY_INTERVAL
+                )
+                await asyncio.sleep(INIT_RETRY_INTERVAL)
+
+        # Step 2 : steady-state polling.
         while True:
             try:
                 await _poll_once(client, state, burn_ata, refund_ata)

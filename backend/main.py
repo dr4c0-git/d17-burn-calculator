@@ -10,6 +10,7 @@ See docs/mechanics.md for the canonical reference.
 
 from __future__ import annotations
 
+import logging
 import os
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -20,6 +21,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from state import BurnState, MULTIPLIERS
+
+# Send INFO and above from our own loggers (helius, indexer) to stdout so
+# Render's log tail surfaces them. uvicorn already configures its access logs.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 
 load_dotenv()
 

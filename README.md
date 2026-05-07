@@ -38,7 +38,7 @@ See [`docs/mechanics.md`](./docs/mechanics.md) for the full reference and source
 
 - **Frontend** : Vite + React + TypeScript + Tailwind CSS
 - **Backend** : FastAPI + Python (httpx, in-memory state)
-- **Solana indexing** : [Helius RPC](https://helius.xyz) (ATA-based to capture every SPL transfer)
+- **Solana indexing** : standard Solana JSON-RPC, ATA-based to capture every SPL transfer. Provider-agnostic (Alchemy as default ; works with Helius, QuickNode, public mainnet via the `SOLANA_RPC_URL` override).
 - **Hosting** : Cloudflare Pages (frontend), Render (backend)
 
 ## Local development
@@ -48,7 +48,7 @@ See [`docs/mechanics.md`](./docs/mechanics.md) for the full reference and source
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # add your HELIUS_API_KEY
+cp .env.example .env  # add your ALCHEMY_API_KEY (or override SOLANA_RPC_URL)
 uvicorn main:app --reload
 
 # Frontend (in a second terminal)
@@ -56,6 +56,10 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Changelog
+
+- **2026-05-07** : indexer migrated from the Helius parsed-tx endpoint to provider-agnostic Solana JSON-RPC (Alchemy as default). Previous setup hit Helius's monthly free-tier ceiling and was left blind for hours. New flow uses `getTokenAccountsByOwner` + `getSignaturesForAddress` + `getTransaction` (with `pre/postTokenBalances` diffing), works with any RPC provider, and survives rate-limits via an automatic ATA-resolution retry loop. Side benefit : refund events (which the parsed-tx response often missed) are now indexed too.
 
 ## Contributing
 
